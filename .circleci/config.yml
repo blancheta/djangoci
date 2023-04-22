@@ -4,14 +4,6 @@ orbs:
   heroku: circleci/heroku@1.2.6
 jobs:
   build_and_test: # this can be any name you choose
-    docker:
-      - image: cimg/python:3.10.1
-#        environment:
-#          DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
-#      - image: circleci/postgres:9.6.2
-#        environment:
-#          POSTGRES_USER: root
-#          POSTGRES_DB: circle_test
     steps:
       - checkout
       - python/install-packages:
@@ -29,44 +21,13 @@ jobs:
           paths:
             - .
 
-  deploy: # this can be any name you choose
-    docker:
-      - image: cimg/python:3.10.1
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - heroku/deploy-via-git:
-          force: true # force push when pushing to the heroku remote, see: https://devcenter.heroku.com/articles/git
-
 workflows:
-  on_commit:
+  heroku_deploy:
     jobs:
       - build_and_test
-      # Follow instructions here to authenticate git for Heroku: https://devcenter.heroku.com/articles/git#http-git-authentication
-      # The following code may be uncommented, onnce HEROKU_API_KEY & HEROKU_APP_NAME environemnt variables are present
-      # Read more: https://circleci.com/docs/2.0/env-vars/
-#       - deploy:
-#           requires:
-#             - build_and_test # only deploy if the build_and_test job has completed
-#           filters:
-#             branches:
-#               only: master # only deploy when on main/master
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
+      - heroku/deploy-via-git:
+          requires:
+            - build_and_test
           filters:
             branches:
-              only:
-                - master
-    jobs:
-      - build_and_test
-      # Follow instructions here to authenticate git for Heroku: https://devcenter.heroku.com/articles/git#http-git-authentication
-      # The following code may be uncommented, onnce HEROKU_API_KEY & HEROKU_APP_NAME environemnt variables are present
-      # Read more: https://circleci.com/docs/2.0/env-vars/
-      # - deploy:
-      #     requires:
-      #       - build_and_test # only deploy if the build_and_test job has completed
-      #     filters:
-      #       branches:
-      #         only: master # only deploy when on main/master
+              only: main
