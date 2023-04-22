@@ -22,18 +22,13 @@ jobs:
           root: ~/project
           paths:
             - .
-
-  deploy: # this can be any name you choose
-    docker:
-      - image: cimg/python:3.10.1
-
 workflows:
   heroku_deploy:
     jobs:
       - build_and_test
       - heroku/deploy-via-git:
           requires:
-            - build
+            - build_and_test
           filters:
             branches:
               only: main
